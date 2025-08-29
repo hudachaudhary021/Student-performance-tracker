@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Student Performance Tracker</title>
+  <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+<nav>
+  <a href="{{ url_for('index') }}">Home</a> |
+  <a href="{{ url_for('students_page') }}">Students</a> |
+  <a href="{{ url_for('add_student') }}">Add Student</a> |
+  <a href="{{ url_for('reports') }}">Reports</a>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash">
+    {% for category, message in messages %}
+      <p class="{{ category }}">{{ message }}</p>
+    {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% if page == "home" %}
+  <h2>Welcome</h2>
+  <ul>
+  {% for s in students[:5] %}
+    <li>{{ s.name }} ({{ s.roll_number }}) - 
+      <a href="{{ url_for('student_detail', student_id=s.id) }}">View</a></li>
+  {% else %}
+    <li>No students yet.</li>
+  {% endfor %}
+  </ul>
+
+{% elif page == "students" %}
+  <h2>All Students</h2>
+  <table>
+    <tr><th>ID</th><th>Name</th><th>Roll</th><th>Action</th></tr>
+    {% for s in students %}
+      <tr>
+        <td>{{ s.id }}</td><td>{{ s.name }}</td><td>{{ s.roll_number }}</td>
+        <td><a href="{{ url_for('student_detail', student_id=s.id) }}">View</a></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4">No students</td></tr>
+    {% endfor %}
+  </table>
+
+{% elif page == "add_student" %}
+  <h2>Add Student</h2>
+  <form method="post">
+    Name: <input name="name" required><br>
+    Roll: <input name="roll_number" required><br>
+    <button>Save</button>
+  </form>
+
+{% elif page == "student_detail" %}
+  <h2>{{ student.name }}</h2>
+  <p>Roll: {{ student.roll_number }}</p>
+  <p>Average: {{ average }}</p>
+  <h3>Grades</h3>
+  <ul>
+  {% for g in grades %}
+    <li>{{ g.subject }} - {{ g.score }}</li>
+  {% else %}
+    <li>No grades</li>
+  {% endfor %}
+  </ul>
+  <a href="{{ url_for('add_grades', student_id=student.id) }}">Add Grade</a>
+
+{% elif page == "add_grades" %}
+  <h2>Add Grade for {{ student.name }}</h2>
+  <form method="post">
+    Subject: <input name="subject" required><br>
+    Score: <input name="score" type="number" min="0" max="100" required><br>
+    <button>Save</button>
+  </form>
+
+{% elif page == "reports" %}
+  <h2>Reports</h2>
+  <form method="post">
+    Subject: <input name="subject" value="{{ subject or '' }}" required>
+    <button>Generate</button>
+  </form>
+  {% if subject %}
+    <p>Class Avg: {{ class_avg }}</p>
+    {% if topper %}
+      <p>Topper: {{ topper.name }} ({{ topper.score }})</p>
+    {% endif %}
+  {% endif %}
+
+{% elif page == "404" %}
+  <h2>404 Not Found</h2>
+{% endif %}
+</body>
+</html>

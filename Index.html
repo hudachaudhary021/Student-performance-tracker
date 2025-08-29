@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Student Performance Tracker</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ url_for('index') }}">Home</a> |
+      <a href="{{ url_for('students_page') }}">Students</a> |
+      <a href="{{ url_for('add_student') }}">Add Student</a> |
+      <a href="{{ url_for('reports') }}">Reports</a>
+    </nav>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash">
+      {% for category, message in messages %}
+        <p class="{{ category }}">{{ message }}</p>
+      {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>
+  {% if page == "home" %}
+    <section class="card">
+      <h2>Welcome</h2>
+      <p>Open the Students page to manage records, or Add Student to create a new record.</p>
+      {% if students %}
+        <h3>Recent Students</h3>
+        <ul>
+          {% for s in students[:5] %}
+            <li>{{ s.name }} ({{ s.roll_number }}) — <a href="{{ url_for('student_detail', student_id=s.id) }}">View</a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </section>
+
+  {% elif page == "students" %}
+    <section class="card">
+      <h2>All Students</h2>
+      <table>
+        <thead><tr><th>ID</th><th>Name</th><th>Roll</th><th>Action</th></tr></thead>
+        <tbody>
+        {% if students %}
+          {% for s in students %}
+            <tr>
+              <td>{{ s.id }}</td>
+              <td>{{ s.name }}</td>
+              <td>{{ s.roll_number }}</td>
+              <td>
+                <a href="{{ url_for('student_detail', student_id=s.id) }}">View</a>
+                <a href="{{ url_for('add_grades', student_id=s.id) }}">Add Grade</a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="4">No students</td></tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </section>
+
+  {% elif page == "add_student" %}
+    <section class="card">
+      <h2>Add Student</h2>
+      <form method="post">
+        <label>Name <input name="name" required></label>
+        <label>Roll number <input name="roll_number" required></label>
+        <button type="submit">Save</button>
+      </form>
+    </section>
+
+  {% elif page == "student_detail" %}
+    <section class="card">
+      <h2>{{ student.name }}</h2>
+      <p><strong>Roll:</strong> {{ student.roll_number }}</p>
+      <p><strong>Average:</strong> {{ average }}</p>
+
+      <h3>Grades</h3>
+      {% if grades %}
+        <table>
+          <thead><tr><th>Subject</th><th>Score</th></tr></thead>
+          <tbody>
+          {% for g in grades %}
+            <tr><td>{{ g.subject }}</td><td>{{ g.score }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No grades yet.</p>
+      {% endif %}
+
+      <p><a class="btn" href="{{ url_for('add_grades', student_id=student.id) }}">Add Grade</a></p>
+    </section>
+
+  {% elif page == "add_grades" %}
+    <section class="card">
+      <h2>Add Grade for {{ student.name }}</h2>
+      <form method="post">
+        <label>Subject <input name="subject" required></label>
+        <label>Score <input name="score" type="number" min="0" max="100" required></label>
+        <button type="submit">Save</button>
+      </form>
+    </section>
+
+  {% elif page == "reports" %}
+    <section class="card">
+      <h2>Reports</h2>
+      <form method="post" class="inline">
+        <label>Subject <input name="subject" value="{{ subject or '' }}" required></label>
+        <button type="submit">Generate</button>
+      </form>
+      {% if subject %}
+        <div class="report">
+          <p><strong>Class Avg ({{ subject }}):</strong> {{ class_avg }}</p>
+          {% if topper %}
+            <p><strong>Topper:</strong> {{ topper.name }} ({{ topper.score }})</p>
+          {% else %}
+            <p>No data for this subject yet.</p>
+          {% endif %}
+        </div>
+      {% endif %}
+    </section>
+
+  {% elif page == "404" %}
+    <section class="card"><h2>404 Not Found</h2></section>
+  {% endif %}
+  </main>
+
+  <footer>
+    <small>Student Performance Tracker · Local demo</small>
+  </footer>
+</body>
+</html>
