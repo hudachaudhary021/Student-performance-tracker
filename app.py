@@ -1,7 +1,11 @@
 # app.py
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, make_response
 from models import StudentTracker
 import os
+
+# Use environment variable for secret key
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret')
 
 def create_app():
     app = Flask(__name__, instance_relative_config=False)
